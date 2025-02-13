@@ -34,6 +34,28 @@ app.post("/tasks", async (req, res) => {
   }
 });
 
+app.put("/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+    if (!title && !description) {
+      return res
+        .status(400)
+        .json({ error: "Title or description are required" });
+    }
+    const queryString =
+      "UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING *;";
+    const { rows } = await database.query(queryString, [
+      title,
+      description,
+      id,
+    ]);
+    res.status(200).json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server listening in port ${port}`);
 });
