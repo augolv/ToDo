@@ -38,10 +38,10 @@ app.put("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description } = req.body;
-    if (!title && !description) {
+    if (!title || !description || !id) {
       return res
         .status(400)
-        .json({ error: "Title or description are required" });
+        .json({ error: "Title, description and id are required" });
     }
     const queryString =
       "UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING *;";
@@ -51,6 +51,20 @@ app.put("/tasks/:id", async (req, res) => {
       id,
     ]);
     res.status(200).json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.delete("/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Id is required" });
+    }
+    const queryString = "DELETE FROM tasks WHERE id = $1;";
+    const { rows } = await database.query(queryString, [id]);
+    return res.status(204).json(rows[0]);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
