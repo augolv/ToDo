@@ -3,14 +3,15 @@ import "dotenv/config";
 
 const { Client } = pkg;
 
-async function query(queryObject) {
+async function query(queryString, params) {
   let client;
   try {
     client = await getNewClient();
-    const result = await client.query(queryObject);
+    const result = await client.query(queryString, params);
     return result;
   } catch (error) {
     console.log(error);
+    throw error;
   } finally {
     await client.end();
   }
